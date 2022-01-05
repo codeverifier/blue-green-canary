@@ -1,0 +1,31 @@
+{
+  "name": "blue-green-canary",
+  "version": "1.0.0",
+  "description": "Blue Green application Express.js backend",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel index.js -d dist",
+    "start": "babel-node index.js",
+    "dev": "nodemon --exec babel-node index.js"
+  },
+  "keywords": [
+    "backend"
+  ],
+  "author": "kasunt",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.15.7",
+    "@babel/core": "^7.15.5",
+    "@babel/node": "^7.15.4",
+    "@babel/preset-env": "^7.15.6",
+    "dotenv": "^10.0.0",
+    "nodemon": "^2.0.13"
+  },
+  "dependencies": {
+    "babel-loader": "8.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "http-graceful-shutdown": "^3.1.5",
+    "socket.io": "^4.2.0"
+  }
+}

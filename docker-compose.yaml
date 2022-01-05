@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  blue-green.client:
+    image: blue-green-client
+    build:
+      context: client
+      dockerfile: Dockerfile
+    depends_on:
+      - blue-green.server
+    ports:
+      - "3000:3000"
+
+  blue-green.server:
+    image: blue-green-server
+    build:
+      context: server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
