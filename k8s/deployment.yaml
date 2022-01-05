@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blue-green
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: blue-green
+  template:
+    metadata:
+      labels:
+        component: blue-green
+    spec:
+      terminationGracePeriodSeconds: 10
+      initContainers:
+        - name: copy-contents
+          image: kasunt/blue-green-canary-frontend:1.0.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - echo "Copying contents";
+              mkdir -p /contents/html-old-contents;
+              cp -R /usr/share/nginx/html/* /contents/html-old-contents/.;
+              rm -f /contents/html-old-contents/config.js;
+              echo "Done";
+          volumeMounts:
+            - name: complete-config
+              mountPath: "/contents"
+        - name: generate-config
+          image: alpine
+          command: ["/bin/sh", "-c"]
+          args:
+            - echo "Copying and writing to config.js file";
+              mkdir -p /usr/share/nginx/html;
+              cp -f /config/config.js /usr/share/nginx/html/;
+              echo "window.env.APP_HOSTNAME='${HOSTNAME}'" >> /usr/share/nginx/html/config.js;
+              cp -Rf /usr/share/nginx/html-old-contents/* /usr/share/nginx/html/.;
+              echo "Done";
+          volumeMounts:
+            - name: config
+              mountPath: "/config/config.js"
+              subPath: "config.js"
+            - name: complete-config
+              mountPath: "/usr/share/nginx"
+      containers:
+        - name: frontend
+          image: kasunt/blue-green-canary-frontend:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: complete-config
+              mountPath: "/usr/share/nginx"
+        - name: backend
+          image: kasunt/blue-green-canary-backend:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+      volumes:
+        - name: config
+          configMap:
+            name: blue-green-config
+            items:
+              - key: "config.properties"
+                path: "config.js"
+        - name: complete-config
+          emptyDir: {} 
